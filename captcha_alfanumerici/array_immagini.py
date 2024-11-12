@@ -15,7 +15,7 @@ def get_all_paths(directory, base_directory):
                 paths.append(relative_path)
     return paths
 
-# Esempio di utilizzo
+# costanti
 base_directory = 'captcha_alfanumerici'  # La cartella madre da omettere nel percorso
 directory_path = os.path.join(base_directory, 'samples')  # La cartella che contiene le immagini
 all_paths = get_all_paths(directory_path, base_directory)
