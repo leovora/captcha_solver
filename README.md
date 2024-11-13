@@ -1,4 +1,4 @@
-#Istruzioni
+**Istruzioni**
 
 Servono 2 terminali:
 - uno per avviare il server localhost: python3 -m http.server 8000
