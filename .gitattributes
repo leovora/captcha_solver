@@ -1,3 +1,4 @@
 captcha_alfanumerici/modello_preaddestrato/model.safetensors filter=lfs diff=lfs merge=lfs -text
 captcha_logici/modello_preaddestrato/model.safetensors filter=lfs diff=lfs merge=lfs -text
 captcha_immagini/modello_immagini.h5 filter=lfs diff=lfs merge=lfs -text
+captcha_immagini/yolo/yolov3.weights filter=lfs diff=lfs merge=lfs -text
