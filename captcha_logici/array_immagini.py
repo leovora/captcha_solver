@@ -1,9 +1,16 @@
+# Script che crea un file json contenente i percorsi 
+# delle immagini da utilizzare nella pagina web della demo
+
 import os
 import json
 
+#costanti
+base_directory = 'captcha_logici'  # cartella madre 
+directory_path = os.path.join(base_directory, 'equation')  # cartella che contiene le immagini
+
 def get_all_paths(directory, base_directory):
     paths = []
-    # os.walk traversa la directory e le sue sottodirectory
+    # os.walk scorre la directory e le sue sottodirectory
     for root, _, files in os.walk(directory):
         for file in files:
             # Costruisce il percorso completo per ciascun file
@@ -13,14 +20,9 @@ def get_all_paths(directory, base_directory):
             paths.append(relative_path)
     return paths
 
-#costanti
-base_directory = 'captcha_logici'  # La cartella madre da omettere nel percorso
-directory_path = os.path.join(base_directory, 'equation')  # La cartella che contiene le immagini
 all_paths = get_all_paths(directory_path, base_directory)
-
-# Stampa l'array di percorsi
 print(all_paths)
 
-# Scrivi l'array su un file JSON
+# Scrive l'array su un file JSON
 with open('files.json', 'w') as f:
-    json.dump(all_paths, f, indent=4)  # Usa indent per formattare meglio il JSON
+    json.dump(all_paths, f, indent=4)

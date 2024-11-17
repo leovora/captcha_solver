@@ -1,3 +1,9 @@
+<!-- 
+ Pagina web che carica un'immagine casuale del dataset 
+ e verifica che l'input dell'utente corrisponda al risultato 
+ dell'espressione contenuta nell'immagine
+ -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,7 +40,7 @@
     <div class="container">
         <h1>CAPTCHA Verification</h1>
         <div id="captcha-container">
-            <!-- Image will be displayed here -->
+            <!-- conterrà l'immagine -->
         </div>
         <input type="text" id="captcha_input" placeholder="Enter result">
         <button id="submit_button">Submit</button>
@@ -42,14 +48,14 @@
     </div>
 
     <script>
-        // Function to evaluate the equation from the first 3 characters
+        // funzione che calcola il risultato corretto dell'equazione
         function evaluateEquation(equation) {
-            const parts = equation.split(/[+\-x/]/); // Split the equation at operators
-            const operator = equation.match(/[+\-x/]/); // Get the operator
+            const parts = equation.split(/[+\-x/]/); // ottiene i numeri dell'equazione
+            const operator = equation.match(/[+\-x/]/); // ottiene l'operatore dell'equazione
 
-            console.log("Equation from filename: ", equation);
-            console.log("parts from equation: ", parts);
-            console.log("operator from equation: ", operator);
+            console.log("Equation: ", equation);
+            console.log("parts: ", parts);
+            console.log("operator: ", operator);
 
             if (parts.length === 2 && operator) {
                 const num1 = parseInt(parts[0], 10);
@@ -69,37 +75,37 @@
                 }
             }
             else{
-                return null; // If it's not a valid equation
+                return null; // se l'equazione non è valida
             }
         }
 
-        // Array of image paths 
+        //  array che contiene i percorsi delle immagini
         fetch('files.json')
             .then(response => response.json())
             .then(files => {
                 const images = files;
 
-                // Select a random image from the dataset
+                // seleziona immagina casuale
                 const randomIndex = Math.floor(Math.random() * images.length);
                 const selectedImage = images[randomIndex];
 
-                // Extract the file name without the extension and folder structure
+                // estrae il nome del file dal percorso
                 const imagePathParts = selectedImage.split('/');
-                const filename = imagePathParts[imagePathParts.length - 1]; // Last part is the file name
+                const filename = imagePathParts[imagePathParts.length - 1]; 
 
-                // Extract the first 3 characters which represent the equation
-                const equation = filename.slice(0, 3); // Get the first 3 characters for the equation
+                // estrae l'equazione dal nome del file
+                const equation = filename.slice(0, 3); 
 
-                // Display the image
+               // visualizza immagine
                 const imgElement = document.createElement('img');
                 imgElement.src = selectedImage; // Update the path accordingly
                 imgElement.alt = "CAPTCHA Image";
                 document.getElementById('captcha-container').appendChild(imgElement);
 
-                // Calculate the correct answer
+                // calcola il risultato corretto
                 const correctAnswer = evaluateEquation(equation);
 
-                // Function to check user's input
+                // funzione che verifica l'input dell'utente
                 function checkCaptcha() {
                     const userInput = document.getElementById('captcha_input').value.trim();
 
@@ -114,7 +120,7 @@
                     }
                 }
 
-                // Add event listener to the submit button
+                // event listener del bottone
                 document.getElementById('submit_button').addEventListener('click', checkCaptcha);
             })
             .catch(error => console.error('Error loading the file:', error));

@@ -1,3 +1,7 @@
+# Sonda Selenium che naviga alla pagina web demo, carica l'immagine 
+# e, utilizzando il modello creato e addestrato da noi, ne riconosce il contenuto. 
+# Scrive la previsione nella textbox e clicca il bottone per verificarne la correttezza
+
 import time
 import os
 import numpy as np
@@ -28,22 +32,15 @@ class LayerCTC(tf.keras.layers.Layer):
         self.add_loss(loss)
 
         return y_pred
-    
 
+# Preprocessing dell'immagine
 def preprocess_image(image):
-    image = image.convert("L")  # Converti in scala di grigi
-    image = image.resize((200, 50))  # Usa le dimensioni appropriate per il modello
-    # Converti l'immagine in un array numpy
-    image_array = np.array(image)
-    # Normalizza i valori dell'immagine per allinearlo al primo codice
-    image_array = image_array / 255.0  # Ora i valori sono tra 0 e 1
-    # Correggi l'orientamento dell'immagine (altezza, larghezza)
-    image_array = np.expand_dims(image_array, axis=-1)  # (200, 50, 1)
-    # Aggiungi la dimensione del batch
-    image_array = np.expand_dims(image_array, axis=0)  # (1, 200, 50, 1)
-    # Trasponi l'immagine per allinearla con il preprocessamento del training
-    image_array = np.transpose(image_array, (0, 2, 1, 3))  # (1, 50, 200, 1)
-    
+    image = image.convert("L")  # Converte in scala di grigi
+    image = image.resize((200, 50))  # Ridimensiona l'immagine
+    image_array = np.array(image) / 255.0  # Normalizza i valori dei pixel
+    image_array = np.expand_dims(image_array, axis=-1)  # Aggiunge un canale
+    image_array = np.expand_dims(image_array, axis=0)  # Aggiunge una dimensione batch
+    image_array = np.transpose(image_array, (0, 2, 1, 3))  # Traspone l'immagine per il modello
     return image_array
 
 # Funzione per decodificare le predizioni
@@ -56,75 +53,65 @@ def decode_single_prediction(pred, max_length, num_to_char):
         output_text.append(res)
     return output_text
 
+# Caricamento e configurazione del modello
+def load_model_and_char_mappings(model_path, samples_path, max_length):
+    # Carica le immagini per definire le funzioni di codifica e decodifica delle etichette
+    dir_img = sorted([str(img) for img in Path(samples_path).glob("*.png") if len(os.path.basename(img).split(".png")[0]) == max_length])
+    img_labels = [os.path.basename(img).split(".png")[0] for img in dir_img]
+    char_set = sorted(set(char for label in img_labels for char in label))
 
-# Carica i dati del captcha
-direc = Path("captcha_alfanumerici/samples")
+    # Crea le funzioni conversione
+    char_to_num = layers.StringLookup(vocabulary=list(char_set), mask_token=None)
+    num_to_char = layers.StringLookup(vocabulary=char_to_num.get_vocabulary(), mask_token=None, invert=True)
 
-# Carica solo immagini PNG con nomi di 5 caratteri
-dir_img = sorted(list(map(str, list(direc.glob("*.png")))))
-dir_img = [img for img in dir_img if len(os.path.basename(img).split(".png")[0]) == 5]
+    # Carica il modello
+    model = keras.models.load_model(model_path, custom_objects={'LayerCTC': LayerCTC})
+    prediction_model = keras.models.Model(inputs=model.input[0], outputs=model.get_layer(name="dense2").output)
+    
+    return prediction_model, num_to_char
 
-img_labels = [img.split(os.path.sep)[-1].split(".png")[0] for img in dir_img]
-char_img = set(char for label in img_labels for char in label)
-char_img = sorted(list(char_img))
+# Configurazione di Selenium WebDriver
+def configure_webdriver(url):
+    driver = webdriver.Chrome()
+    driver.get(url)
+    return driver
 
-# Stampa informazioni
-print("Number of dir_img found: ", len(dir_img))
-print("Number of img_labels found: ", len(img_labels))
-print("Number of unique char_img: ", len(char_img))
-print("Characters present: ", char_img)
+def main():
+    url = "http://localhost:8000/captcha_alfanumerici/demo.html"
+    model_path = 'captcha_alfanumerici/modello_alfanumerici.h5'
+    samples_path = "captcha_alfanumerici/samples"
+    max_length = 5
 
-# Impostiamo la lunghezza massima
-max_length = max([len(label) for label in img_labels])
+    # Carica il modello e le mappature dei caratteri
+    prediction_model, num_to_char = load_model_and_char_mappings(model_path, samples_path, max_length)
+    
+    # Configura il WebDriver
+    driver = configure_webdriver(url)
 
-# Char to integers
-char_to_num = layers.StringLookup(vocabulary=list(char_img), mask_token=None)
+    try:
+        # Trova l'immagine CAPTCHA
+        captcha_image = driver.find_element(By.TAG_NAME, "img")
+        captcha_image_bytes = captcha_image.screenshot_as_png
+        image = Image.open(BytesIO(captcha_image_bytes))
 
-# Integers to original characters
-num_to_char = layers.StringLookup(vocabulary=char_to_num.get_vocabulary(), mask_token=None, invert=True)
+        # Preprocessa l'immagine
+        image_array = preprocess_image(image)
 
-# Carica il modello
-model = keras.models.load_model('captcha_alfanumerici/modello_alfanumerici.h5', custom_objects={'LayerCTC': LayerCTC})
+        # Effettua la previsione
+        pred = prediction_model.predict(image_array)
+        pred_text = decode_single_prediction(pred, max_length, num_to_char)
 
-# Creiamo un modello per la predizione, utilizzando solo l'immagine come input (senza etichette)
-prediction_model = keras.models.Model(
-    inputs=model.input[0],  
-    outputs=model.get_layer(name="dense2").output  
-)
+        # Inserisce la previsione nella textbox e invia
+        textbox = driver.find_element(By.ID, "captcha_input")
+        textbox.clear()
+        textbox.send_keys(pred_text[0])
+        driver.find_element(By.ID, "submit_button").click()
 
-# Vai al sito
-driver = webdriver.Chrome()
-driver.get("http://localhost:8000/captcha_alfanumerici/demo.html")
+        time.sleep(5)
+    except Exception as e:
+        print(f"Errore: {e}")
+    finally:
+        driver.quit()
 
-# Trova l'elemento dell'immagine CAPTCHA
-captcha_image = driver.find_element(By.TAG_NAME, "img")
-
-# Ottieni l'immagine come byte array
-captcha_image_bytes = captcha_image.screenshot_as_png
-image = Image.open(BytesIO(captcha_image_bytes))
-
-# Preprocessa l'immagine
-image_array = preprocess_image(image)
-print(image_array)
-
-# Usa il modello per fare una previsione (senza etichette)
-pred = prediction_model.predict(image_array)
-
-# Decodifica la previsione
-pred_text = decode_single_prediction(pred, max_length, num_to_char)
-
-# Trova la textbox per l'inserimento del CAPTCHA
-textbox = driver.find_element(By.ID, "captcha_input")
-
-# Scrivi la previsione nella textbox
-textbox.send_keys(pred_text[0])
-
-# Trova il pulsante di verifica e clicca su di esso
-verify_button = driver.find_element(By.ID, "submit_button")
-verify_button.click()
-
-# Attendi un po' per vedere se la verifica ha avuto successo
-time.sleep(10)
-
-# Chiudi il browser
-driver.quit()
+if __name__ == "__main__":
+    main()

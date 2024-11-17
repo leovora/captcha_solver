@@ -1,3 +1,6 @@
+#Script per la costruzione di un modello 
+# in grado di analizzare e decifrare captcha con immagini
+
 import os
 import numpy as np
 import pandas as pd
@@ -8,31 +11,27 @@ from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, BatchNormalizatio
 from sklearn.model_selection import train_test_split
 import cv2
 from keras.callbacks import EarlyStopping
-import visualkeras
-from PIL import ImageFont
 
-# Set seed for reproducibility
 SEED = 1111
 np.random.seed(SEED)
 tf.random.set_seed(SEED)
 
-# Dataset preparation
+# preparazione dataset
 DATASET_PATH = "captcha_dataset/Google_Recaptcha_V2_Images_Dataset/images"
-#DATASET_PATH = "captcha_immagini/immagini/images"
 VALID_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif"]
 
-#Data directory setup
+# setup delle directory
 def load_image_paths_and_labels(dataset_path):
     data = [
         {"img_path": os.path.join(root, file), "label": os.path.basename(root)}
         for root, _, files in os.walk(dataset_path)
-        if os.path.basename(root) != "Other"
+        if os.path.basename(root) != "Other" #ignora cartella "Other"
         for file in files
         if os.path.splitext(file)[1].lower() in VALID_EXTENSIONS
     ]
     return pd.DataFrame(data)
 
-# Data splitting
+# splitting
 dataset = load_image_paths_and_labels(DATASET_PATH).sample(frac=1.0, random_state=SEED).reset_index(drop=True)
 train_df, test_df = train_test_split(dataset, test_size=0.15, random_state=SEED)
 train_df = train_df.reset_index(drop=True)
@@ -40,14 +39,14 @@ test_df = test_df.reset_index(drop=True)
 
 class_names = dataset["label"].unique()
 
-# Utility functions for label encoding/decoding
+# funzioni per codifica e decodifica delle etichette
 def encode_label(label):
     return np.argmax(label == class_names)
 
 def decode_label(label_idx):
     return class_names[label_idx]
 
-# Load images and labels
+# caricamento immagini e etichette
 def load_images_and_labels(df, img_size=(120, 120)):
     images, labels = [], []
     for _, row in df.iterrows():
@@ -60,7 +59,7 @@ def load_images_and_labels(df, img_size=(120, 120)):
 X_train, y_train = load_images_and_labels(train_df)
 X_test, y_test = load_images_and_labels(test_df)
 
-# Build the model
+# costruzione del modello
 def build_model(input_shape=(120, 120, 3), num_classes=len(class_names)):
     model = keras.Sequential([
         Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=input_shape),
@@ -83,11 +82,11 @@ def build_model(input_shape=(120, 120, 3), num_classes=len(class_names)):
 model = build_model()
 model.summary()
 
-# Train the model
+# training
 early_stopping = EarlyStopping(monitor='val_accuracy', patience=5, restore_best_weights=True)
 history = model.fit(X_train, y_train, batch_size=100, epochs=20, validation_data=(X_test, y_test), callbacks=[early_stopping])
 
-# Display predictions
+# stampa predizioni
 def display_predictions(model, X_test, y_test, num_samples=16):
     indices = np.random.choice(len(X_test), num_samples, replace=False)
     sample_images = X_test[indices]
@@ -101,12 +100,12 @@ def display_predictions(model, X_test, y_test, num_samples=16):
         plt.grid(False)
         plt.imshow(img, cmap=plt.cm.binary)
         
-        # Make prediction
+        # calcola predizione
         pred = model.predict(img[np.newaxis])  
         pred_label = decode_label(np.argmax(pred))
         true_label = decode_label(sample_labels[i])
 
-        # Title with correct or incorrect label
+        # verifica correttezza della predizione
         if pred_label == true_label:
             plt.title(f"Pred: {pred_label} (correct)")
             plt.gca().add_patch(plt.Rectangle((0, 0), 120, 120, fill=False, edgecolor='green', linewidth=7))
@@ -114,16 +113,15 @@ def display_predictions(model, X_test, y_test, num_samples=16):
             plt.title(f"Pred: {pred_label} - True: {true_label}")
             plt.gca().add_patch(plt.Rectangle((0, 0), 120, 120, fill=False, edgecolor='red', linewidth=7))
         
-        # Show the plot
         plt.show()
 
-# Example usage
+
 display_predictions(model, X_test, y_test)
 
-# Save the trained model
+# salvataggio modello allenato
 model.save('trained_model.h5')
 
-# Plot training history
+# grafico andamento loss, val_loss, accuracy e val_accuracy
 def plot_training_history(history):
     plt.figure(figsize=(12, 4))
     plt.subplot(1, 2, 1)

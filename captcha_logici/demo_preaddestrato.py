@@ -1,3 +1,7 @@
+# Sonda Selenium che naviga alla pagina web demo, carica l'immagine 
+# e, utilizzando il modello preaddestrato, ne riconosce il contenuto. 
+# Scrive la previsione nella textbox e clicca il bottone per verificarne la correttezza
+
 from transformers import VisionEncoderDecoderModel, TrOCRProcessor
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -6,8 +10,8 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 import time
 
+# Calcola il risultato dell'espressione
 def calculate_expression(digit1, digit2, operator):
-    # Mappa l'operatore riconosciuto a una funzione matematica
     if operator == '+':
         return digit1 + digit2
     elif operator == '-':
@@ -24,10 +28,10 @@ model = VisionEncoderDecoderModel.from_pretrained('captcha_logici/modello_preadd
 processor = TrOCRProcessor.from_pretrained("microsoft/trocr-base-handwritten")
 
 # Inizializza Selenium
-driver = webdriver.Chrome()  # Assicurati di avere il driver Chrome configurato correttamente
-driver.get("http://localhost:8000/captcha_logici/demo.html")  # Sostituisci con il percorso corretto
+driver = webdriver.Chrome() 
+driver.get("http://localhost:8000/captcha_logici/demo.html")
 
-# Trova l'elemento dell'immagine CAPTCHA sulla pagina
+# Trova l'immagine CAPTCHA sulla pagina
 captcha_image = driver.find_element(By.TAG_NAME, "img")
 
 # Ottieni l'immagine come byte array
@@ -43,16 +47,13 @@ generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)
 
 result = calculate_expression(int(generated_text[0]), int(generated_text[2]), generated_text[1])
 
-# Inserisci il testo previsto nella textbox del CAPTCHA
+# Inserisce il testo previsto nella textbox 
 textbox = driver.find_element(By.ID, "captcha_input") 
 textbox.send_keys(result)
 
-# Trova il pulsante di invio e cliccalo
+# Trova il pulsante di invio e lo clicca
 verify_button = driver.find_element(By.ID, "submit_button")  
 verify_button.click()
 
-# Attendi qualche secondo per vedere il risultato 
 time.sleep(10)
-
-# Chiudi il browser
 driver.quit()
