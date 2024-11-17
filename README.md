@@ -1,6 +1,6 @@
 # CAPTCHA Solver
 
-Questo repository contiene il codice per creare, addestrare e testare modelli di machine learning progettati per risolvere diversi tipi di CAPTCHA. Utilizzando tecniche di visione artificiale, i modelli sono in grado di riconoscere e risolvere CAPTCHA alfanumerici, logici e basati su immagini.
+Questo repository contiene il codice per creare, addestrare e testare modelli di machine learning progettati per risolvere diversi tipi di CAPTCHA. I modelli sono in grado di riconoscere e risolvere CAPTCHA alfanumerici, logici e basati su immagini.
 
 Il progetto include:
 
