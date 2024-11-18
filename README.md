@@ -48,4 +48,5 @@ pip install Pillow
 pip install opencv-python
 pip install selenium
 pip install transformers
+pip install -q datasets jiwer evaluate wandb
 ```
