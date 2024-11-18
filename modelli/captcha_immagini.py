@@ -17,7 +17,7 @@ np.random.seed(SEED)
 tf.random.set_seed(SEED)
 
 # preparazione dataset
-DATASET_PATH = "captcha_dataset/Google_Recaptcha_V2_Images_Dataset/images"
+DATASET_PATH = "captcha_immagini/immagini/images"
 VALID_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif"]
 
 # setup delle directory
