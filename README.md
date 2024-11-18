@@ -41,6 +41,7 @@ Installa le seguenti dipendenze per far funzionare il progetto:
 
 ```bash
 pip install scikit-image
+pip install scikit-learn
 pip install tensorflow
 pip install torch torchvision torchaudio  # installa la versione corretta per il tuo dispositivo (https://pytorch.org/get-started/locally/)
 pip install matplotlib
@@ -50,4 +51,6 @@ pip install selenium
 pip install transformers
 pip install -q datasets jiwer evaluate wandb
 pip install pandas
+pip install pydot
+pip install graphviz
 ```
