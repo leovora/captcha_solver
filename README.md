@@ -43,7 +43,7 @@ Installa le seguenti dipendenze per far funzionare il progetto:
 pip install scikit-image
 pip install scikit-learn
 pip install tensorflow
-pip install torch torchvision torchaudio  # installa la versione corretta per il tuo dispositivo (https://pytorch.org/get-started/locally/)
+pip install torch torchvision torchaudio  # controlla versione consigliata (https://pytorch.org/get-started/locally/)
 pip install matplotlib
 pip install Pillow
 pip install opencv-python
