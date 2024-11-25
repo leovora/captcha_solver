@@ -68,17 +68,13 @@ def build_model():
     out = input
 
     out = Conv2D(filters=32, kernel_size=(3, 3), activation='relu')(out)
-    out = Dropout(0.3)(out)  
     out = Conv2D(filters=32, kernel_size=(3, 3), activation='relu')(out)
-    out = Dropout(0.3)(out)  
     out = MaxPool2D(pool_size=(2, 2))(out)
 
     out = Conv2D(filters=64, kernel_size=(3, 3), activation='relu')(out)
-    out = Dropout(0.4)(out)  
     out = MaxPool2D(pool_size=(2, 2))(out)
 
     out = Conv2D(filters=64, kernel_size=(3, 3), activation='relu')(out)
-    out = Dropout(0.4)(out)  
     out = MaxPool2D(pool_size=(2, 2))(out)
 
     out = Flatten()(out)
