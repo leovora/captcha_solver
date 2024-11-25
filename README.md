@@ -40,17 +40,9 @@ Apri un secondo terminale per eseguire gli script di test. Puoi testare i modell
 Installa le seguenti dipendenze per far funzionare il progetto:
 
 ```bash
-pip install scikit-image
-pip install scikit-learn
-pip install tensorflow
-pip install torch torchvision torchaudio  # controlla versione consigliata (https://pytorch.org/get-started/locally/)
-pip install matplotlib
-pip install Pillow
-pip install opencv-python
-pip install selenium
-pip install transformers
-pip install -q datasets jiwer evaluate wandb
-pip install pandas
-pip install pydot
-pip install graphviz
+pip install scikit-image scikit-learn tensorflow torch torchvision torchaudio matplotlibPillow opencv-python selenium transformers -q datasets jiwer evaluate wandb pandas pydot graphviz
 ```
+#
+### Progetto realizzato da:
+- Leonardo Vorabbi
+- Carlotta Nunziati
