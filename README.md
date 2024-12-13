@@ -2,13 +2,6 @@
 
 Questo repository contiene il codice per creare, addestrare e testare modelli di machine learning progettati per risolvere diversi tipi di CAPTCHA. I modelli sono in grado di riconoscere e risolvere CAPTCHA alfanumerici, logici e basati su immagini.
 
-Il progetto include:
-
-- Creazione di modelli deep learning
-- Addestramento su dataset personalizzati
-- Automazione del processo di inferenza tramite Selenium
-- I dataset utilizzati per l'addestramento
-
 ## Struttura del Repository
 
 ```bash
